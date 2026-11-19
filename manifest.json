@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "name": "Universal Auto PiP",
+  "version": "2.4",
+  "description": "Toggle native Picture-in-Picture for the video in the current tab.",
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "scripting",
+    "contextMenus"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "commands": {
+    "start-pip": {
+      "suggested_key": {
+        "default": "Alt+Shift+P"
+      },
+      "description": "Toggle Picture-in-Picture in the active tab"
+    },
+    "stop-pip": {
+      "suggested_key": {
+        "default": "Alt+Shift+O"
+      },
+      "description": "Close the active Picture-in-Picture window"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>",
+        "file:///*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle",
+      "all_frames": true
+    }
+  ],
+  "action": {
+    "default_title": "Toggle Picture-in-Picture",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
