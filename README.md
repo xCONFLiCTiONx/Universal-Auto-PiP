@@ -93,4 +93,4 @@ Video discovery and selection run locally in Chrome. The extension does not tran
 
 ## License
 
-Original project materials are proprietary and All Rights Reserved under [LICENSE](LICENSE). Third-party components remain subject to their respective licenses.
+Original project materials are licensed under GNU GPL version 3. Third-party components remain subject to their respective licenses.
