@@ -53,7 +53,8 @@ async function toggleFramePiP() {
                 const visible = rect.width > 0 && rect.height > 0 &&
                     style.display !== "none" && style.visibility !== "hidden" &&
                     Number(style.opacity || 1) > 0;
-                const ready = element.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA &&
+                const ready = !element.error &&
+                    element.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA &&
                     element.videoWidth > 0 && element.videoHeight > 0;
 
                 if (visible && ready) {
@@ -193,3 +194,32 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 // Context menu items persist across service worker restarts and browser sessions in MV3.
 // Creating them only on onInstalled prevents duplicate ID race conditions.
 chrome.runtime.onInstalled.addListener(setupContextMenus);
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message?.type !== "PIP_REQUEST_HANDOFF") return;
+    const tabId = sender?.tab?.id;
+    if (!tabId || isRestrictedUrl(sender?.tab?.url)) {
+        sendResponse({ success: false, reason: "invalid-tab" });
+        return;
+    }
+
+    (async () => {
+        try {
+            const results = await chrome.scripting.executeScript({
+                target: { tabId, allFrames: true },
+                func: async () => {
+                    if (document.pictureInPictureElement) return { success: false, reason: "source-frame" };
+                    if (typeof globalThis.__universalPiPTryTakeover === "function") {
+                        return await globalThis.__universalPiPTryTakeover();
+                    }
+                    return { success: false, reason: "no-handler" };
+                }
+            });
+            const handedOff = (results || []).some(item => item?.result?.success);
+            sendResponse({ success: handedOff });
+        } catch (error) {
+            sendResponse({ success: false, reason: error?.name || "handoff-failed" });
+        }
+    })();
+    return true;
+});
